@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>sbt for dummies - a JJTV Tool Night Presentation</title>
+
+		<meta name="description" content="An overview of sbt, given at JJTV Tool Night #9 on 20 January, 2014">
+		<meta name="author" content="Tomer Gabel">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+		<link rel="stylesheet" href="css/sbt.css">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>sbt for dummies</h1>
+					<h3>A JJTV Tool Night presentation, January 2014</h3>
+					<p>
+						<small><a href="http://www.tomergabel.com">Tomer Gabel</a> (<a href="http://twitter.com/tomerg">@tomerg</a>), <a href="http://www.wix.com">Wix</a></small>
+					</p>
+				</section>
+
+				<section>
+					<section>
+						<h1><u>In a nutshell</u></h1>
+						<h3>sbt is...</h3>
+					</section>
+
+					<section>
+						<h2>A Scala-centric build tool</h2>
+						<p><ul>
+							<li>Written in Scala</li>
+							<li>... for Scala</li>
+						</ul></p>
+
+						<aside class="notes">
+							sbt is designed to provide the best experience for Scala developers, meaning:
+							* It's Scala throughout (sbt itself, build definitions, plugins)
+							* It attempts to tackle some of Scala's paint points (mixed-language projects, compilation times, advanced test frameworks)
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h1><u>The punchline</u></h1>
+						<h3>sbt gives you...</h3>
+					</section>
+
+					<section>
+						<h2>Convention over configuration</h2>
+						<p><ul>
+							<li>Maven-ish directory structure</li>
+							<li>Maven-ish lifecycle</li>
+							<li>Ivy dependency management</li>
+						</ul></p>
+					</section>
+
+					<section>
+						<h2>Scala-centric</h2>
+						<p><ul>
+							<li>Build "scripts" defined in Scala</li>
+							<li>Mixed-language projects</li>
+							<li>Incremental compilation</li>
+							<li>Support for advanced testing frameworks</li>
+						</ul></p>
+					</section>
+
+					<section>
+						<h2>REPL</h2>
+						<p><ul>
+							<li>Introspection</li>
+							<li>Continuous build/test</li>
+							<li>Interactive flows</li>
+						</ul></p>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2>Exposition</h2>
+						<h3>What's in a build tool?</h3>
+					</section>
+
+					<section>
+						<h2>Project model</h2>
+
+						<p><ul>
+							<li>Multi-project builds</li>
+							<li>Lifecycle</li>
+							<li>Properties</li>
+							<li>Tasks</li>
+						</ul></p>
+
+						<p><em>sbt's model is immutable</em></p>
+					</section>
+
+					<section>
+						<h2>Dependency management</h2>
+						<p><ul>
+							<li>Based on Ivy</li>
+							<li>Supports Maven repositories</li>
+							<li>Automatic Scala version handling</li>
+						</ul></p>
+					</section>
+
+					<section>
+						<h2>Plugin model</h2>
+						<p><ul>
+							<li>Mix in additional features</li>
+							<li>Customize lifecycle stages</li>
+							<li>Examples include:
+								<ul>
+									<li>IDE integration</li>
+									<li>Web containers/Servlet API</li>
+									<li>Code generation</li>
+									<li>Release process and publishing</li>
+								</ul>
+							</li>
+						</ul></p>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h1>The sbt project model</h1>
+					</section>
+
+					<section>
+						<h2>Fundamentals</h2>
+
+						<p><ul>
+							<li>Keys</li>
+							<li>Configurations</li>
+							<li>Settings</li>
+							<li>Tasks</li>
+						</ul></p>
+						
+						<aside class="notes">
+							Configurations are like lifecycle scopes, which essentially track Ivy configurations. Indirecting a task through its
+							configuration is a powerful mechanism for referencing an atomic lifecycle stage, similar to a Maven goal; for
+							example, compile:packageBin or test:test.
+							
+							A key is selected via a predefined search path (essentially compile->runtime->test and falling back to the parent project). 
+						</aside>
+					</section>
+
+					<section>
+						<h2>Everything is keyed</h2>
+
+						<h3 align="left">Settings</h3>
+						<pre><code data-trim class="language-scala">
+val scalaVersion: SettingKey[String]
+val scalacOptions: TaskKey[Seq[String]]
+val libraryDependencies: SettingKey[Seq[ModuleID]]
+						</code></pre>
+						<br/>
+						<h3 align="left">Tasks</h3>
+						<pre><code data-trim class="language-scala">
+val compile: TaskKey[Analysis]
+val test: TaskKey[Unit]
+						</code></pre>
+					</section>
+
+					<section>
+						<h2>Everything is scoped</h2>
+
+						<div width="100%" style="text-align: left">
+							<h3>The three axes:</h3>
+							<ul style="margin-left: 10%">
+								<li>Project</li>
+								<li>Configuration</li>
+								<li>Task</li>
+							</ul>
+						</div>
+						<br/>
+						<h3 align="left">For example:</h3>
+						<pre><code data-trim class="language-scala">
+scalacOptions in ( Compile, doc ) := Seq.empty
+publishArtifact in Test := false
+						</code></pre>
+					</section>
+					
+					<section>
+						<h2>Delegations</h2>
+						
+						<p><ul>
+							<li>A setting or task exists in <em>multiple scopes</em>
+								<ul>
+									<li><code class="inline">scalacOptions</code> in compile <em>and</em> test</li>
+								</ul>
+							</li>
+							<li>Each key has a list of <em>delegates</em></li>
+							<li>The list is searched in order to lookup the <em>value</em></li>
+						</ul><p>
+						
+						<pre><code data-trim class="language-no-highlight">
+> inspect test:scalacOptions
+[info] Task: scala.collection.Seq[java.lang.String]
+[info] Description:
+[info] 	Options for the Scala compiler.
+...
+[info] Delegates:
+[info] 	my-project/test:scalacOptions
+[info] 	my-project/runtime:scalacOptions
+[info] 	my-project/compile:scalacOptions
+[info] 	my-project/*:scalacOptions
+[info] 	{.}/test:scalacOptions
+...
+						</code></pre>
+					</section>
+					
+					<section>
+						<h2>Dependencies</h2>
+						
+						<p><ul>
+							<li>Each setting or task can <em>depend</em> on another</li>
+							<li>For example:</li>
+						</ul></p>
+						<pre><code data-trim class="language-scala">
+libraryDependencies <+= 	// The '<' prefix denotes a dependency
+	scalaVersion( "org.scala-lang" % "scala-reflect" % _ % "provided" )
+						</code></pre>
+						<pre><code data-trim class="language-no-highlight">
+ inspect libraryDependencies
+[info] Setting: scala.collection.Seq[sbt.ModuleID] = List(org.scala-lang:scala-library:2.10.3, org.scala-lang:scala-reflect:2.10.3:provided, org.scalatest:scalatest:2.0:test)
+[info] Description:
+[info] 	Declares managed dependencies.
+...
+[info] Dependencies:
+[info] 	my-project/*:scalaVersion
+[info] Reverse dependencies:
+[info] 	my-project/*:allDependencies
+...
+						</code></pre>
+					</section>
+					
+					<section>
+						<h2>Multi-project builds</h2>
+						
+<!-- TODO -->
+						<p><ul>
+							<li>root project</li>
+							<li>additional projects</li>
+							<li>aggregation</li>
+							<li>dependency</li>
+						</ul></p>
+					</section>
+				</section>
+
+				<section>					
+					<section>
+						<h1>sbt project structure</h1>
+					</section>
+					
+					<section>
+						<h2>Build definitions</h2>
+						
+						<p><ul>
+							<li>Full-blown definitions in <code class="inline">project/&lt;file&gt;.scala</code></li>
+							<li>Short-hand definitions in <code class="inline">&lt;file&gt;.sbt</code>
+								<ul>
+									<li>Really just a sequence of settings</li>
+									<li>May <em>depend</em> on full definitions</li>
+									<li>Take <em>precedence</em> over full definitions</li>
+								</ul>								
+							</li>							
+						</ul></p>
+					</section>
+					
+					<section>
+						<h2>Library dependencies</h2>
+						
+						<p><ul>
+							<li>unmanaged</li>
+							<li>managed (with scala)</li>
+						</ul></p>
+					</section>
+					
+					<section>
+						<h2>Plugins galore</h2>
+						
+					</section>
+				</section>
+				
+				<section>
+					<section>
+						<h1>The sbt REPL</h1>
+					</section>
+					
+					<section>
+						<h2>Navigation</h2>
+						<p><ul>
+							<li>Project</li>
+							<li>Configuration</li>
+						</ul></p>
+					</section>
+
+					<section>
+						<h2>Introspection</h2>
+						
+						<p><ul>
+							<li>Key convention</li>
+							<li>inspect</li>
+							<li>inspect tree</li>
+							<li>show</li>
+						</ul></p>						
+					</section>
+
+					<section>
+						<h2>Execution</h2>
+						
+						<p><ul>
+							<li>Executing tasks</li>
+							<li>Continuous execution</li>
+						</ul></p>						
+					</section>
+				</section>
+
+				<section>
+					<h1>Questions?</h1>
+				</section>
+
+				<section>
+					<h1>Thank you!</h1>
+					<ul>
+						<li><a rel="author" href="http://www.tomergabel.com">http://www.tomergabel.com</a></li>
+						<li><a rel="author" href="mailto:tomer@tomergabel.com">tomer@tomergabel.com</a>
+						<li><a rel="author" href="http://www.twitter.com/tomerg">@tomerg</a>
+					</ul>
+					<div style="height: 20%"><br/></div>
+					<center>
+						<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="images/by-sa.png" /></a>					
+					</center>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
