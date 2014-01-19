@@ -265,11 +265,21 @@ libraryDependencies <+= 	// The '<' prefix denotes a dependency
 						
 <!-- TODO -->
 						<p><ul>
-							<li>root project</li>
-							<li>additional projects</li>
-							<li>aggregation</li>
-							<li>dependency</li>
+							<li>One <em>root project</em></li>
+							<li>Child projects are explicitly declared</li>
+							<li>Projects can <em>depend</em> on siblings</li>
+							<li>Projects can <em>aggregate</em> siblings</li>
 						</ul></p>
+						<br/>
+						<pre><code data-trim language="scala">
+lazy val common = Project in file( "common" )
+
+lazy val model = Project in file( "model" ) dependsOn( common )
+
+lazy val webapp = Project in file( "webapp" ) dependsOn( common, model )
+
+lazy val root = Project in file( "." ) aggregate( common, model, webapp )
+						</code></pre>
 					</section>
 				</section>
 
@@ -297,9 +307,19 @@ libraryDependencies <+= 	// The '<' prefix denotes a dependency
 						<h2>Library dependencies</h2>
 						
 						<p><ul>
-							<li>unmanaged</li>
-							<li>managed (with scala)</li>
-						</ul></p>
+							<li>Drop unmanaged JARs under <code class="inline">&lt;project&gt;/lib</code></li>
+							<li>Add managed dependencies to <code class="inline">libraryDependencies</code>
+							<li>Reference artifacts with the helper operator <code class="inline">%</code>
+							<li>Use <code class="inline">%%</code> helper for Scala dependencies</li>
+						</ul></p>						
+						<br/>
+						<pre><code data-trim class="language-scala">
+libraryDependencies ++= Seq(
+  "org.springframework" %  "spring-context" % "3.2.5.RELEASE"         ,
+  "org.springframework" %  "spring-test"    % "3.2.5.RELEASE" % "test",
+  "org.scalatest"       %% "scalatest"      % "2.0"           % "test"						
+)
+						</code></pre>
 					</section>
 					
 					<section>
@@ -354,6 +374,7 @@ libraryDependencies <+= 	// The '<' prefix denotes a dependency
 						<li><a rel="author" href="http://www.twitter.com/tomerg">@tomerg</a>
 					</ul>
 					<div style="height: 20%"><br/></div>
+					This presentation is available on <a href="https://github.com/holograph/jjtv-sbt">GitHub</a> under:
 					<center>
 						<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="images/by-sa.png" /></a>					
 					</center>
