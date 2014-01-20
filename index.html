@@ -35,7 +35,6 @@
 
 		<div class="reveal">
 
-			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
 				<section>
 					<h1>sbt for dummies</h1>
@@ -48,11 +47,7 @@
 				<section>
 					<section>
 						<h1><u>In a nutshell</u></h1>
-						<h3>sbt is...</h3>
-					</section>
-
-					<section>
-						<h2>A Scala-centric build tool</h2>
+						<h3>sbt is a Scala-centric build tool</h2>
 						<p><ul>
 							<li>Written in Scala</li>
 							<li>... for Scala</li>
@@ -216,7 +211,7 @@ publishArtifact in Test := false
 								</ul>
 							</li>
 							<li>Each key has a list of <em>delegates</em></li>
-							<li>The list is searched in order to lookup the <em>value</em></li>
+							<li>The list is searched in-order for a bound <em>value</em></li>
 						</ul><p>
 						
 						<pre><code data-trim class="language-no-highlight">
@@ -237,15 +232,13 @@ publishArtifact in Test := false
 					
 					<section>
 						<h2>Dependencies</h2>
-						
-						<p><ul>
-							<li>Each setting or task can <em>depend</em> on another</li>
-							<li>For example:</li>
-						</ul></p>
+
+						<p align="left">Each setting or task can <em>depend</em> on another. For example:</p>
 						<pre><code data-trim class="language-scala">
 libraryDependencies <+= 	// The '<' prefix denotes a dependency
-	scalaVersion( "org.scala-lang" % "scala-reflect" % _ % "provided" )
+  scalaVersion( "org.scala-lang" % "scala-reflect" % _ % "provided" )
 						</code></pre>
+						<p align="left">A dependency is implicitly created:</p>
 						<pre><code data-trim class="language-no-highlight">
  inspect libraryDependencies
 [info] Setting: scala.collection.Seq[sbt.ModuleID] = List(org.scala-lang:scala-library:2.10.3, org.scala-lang:scala-reflect:2.10.3:provided, org.scalatest:scalatest:2.0:test)
@@ -263,7 +256,6 @@ libraryDependencies <+= 	// The '<' prefix denotes a dependency
 					<section>
 						<h2>Multi-project builds</h2>
 						
-<!-- TODO -->
 						<p><ul>
 							<li>One <em>root project</em></li>
 							<li>Child projects are explicitly declared</li>
@@ -271,7 +263,7 @@ libraryDependencies <+= 	// The '<' prefix denotes a dependency
 							<li>Projects can <em>aggregate</em> siblings</li>
 						</ul></p>
 						<br/>
-						<pre><code data-trim language="scala">
+						<pre><code data-trim class="language-scala">
 lazy val common = Project in file( "common" )
 
 lazy val model = Project in file( "model" ) dependsOn( common )
@@ -308,9 +300,14 @@ lazy val root = Project in file( "." ) aggregate( common, model, webapp )
 						
 						<p><ul>
 							<li>Drop unmanaged JARs under <code class="inline">&lt;project&gt;/lib</code></li>
-							<li>Add managed dependencies to <code class="inline">libraryDependencies</code>
+							<li>Add managed dependencies to <code class="inline">libraryDependencies</code></li>
 							<li>Reference artifacts with the helper operator <code class="inline">%</code>
-							<li>Use <code class="inline">%%</code> helper for Scala dependencies</li>
+								<ul>
+									<li>Dependencies can be scoped to a configuration</li>
+									<li>Use <code class="inline">%%</code> helper for Scala dependencies</li>
+								</ul>
+							</li>
+							
 						</ul></p>						
 						<br/>
 						<pre><code data-trim class="language-scala">
@@ -323,7 +320,27 @@ libraryDependencies ++= Seq(
 					</section>
 					
 					<section>
-						<h2>Plugins galore</h2>
+						<h2>Plugins</h2>
+						
+						<p><ul>
+							<li>Added to the <em>build project</em> classpath</li>
+							<li>Usually provide extra settings and tasks</li>
+							<li>By convention, declared in <code class="inline">&lt;project&gt;/&lt;plugin&gt;.sbt</code></li>
+						</ul></p>
+						
+						<br/>
+						<p align="left">project/Release.sbt:</p>
+						<pre><code data-trim class="langauge-scala">
+addSbtPlugin( "com.earldouglas" % "xsbt-web-plugin" % "0.6.0" )
+						</code></pre>
+						<p align="left">build.sbt:</p>
+						<pre><code data-trim class="langauge-scala">
+import com.earldouglas.xsbtwebplugin.PluginKeys._
+
+seq( webSettings:_* )
+
+port in container.Configuration := 12345
+						</code></pre>
 						
 					</section>
 				</section>
@@ -332,38 +349,130 @@ libraryDependencies ++= Seq(
 					<section>
 						<h1>The sbt REPL</h1>
 					</section>
-					
-					<section>
-						<h2>Navigation</h2>
-						<p><ul>
-							<li>Project</li>
-							<li>Configuration</li>
-						</ul></p>
-					</section>
 
 					<section>
 						<h2>Introspection</h2>
 						
-						<p><ul>
-							<li>Key convention</li>
-							<li>inspect</li>
-							<li>inspect tree</li>
-							<li>show</li>
-						</ul></p>						
+						<p align="left">
+							Use the REPL to inspect your model:
+							<ul>
+								<li><code class="inline">inspect &lt;key&gt;</em></code> inspects the key metadata</li>
+								<li><code class="inline">inspect tree &lt;key&gt;</code> inspects the dependency tree</li>
+								<li><code class="inline">show &lt;key&gt;</code> lists the value</li>
+							</ul>
+						</p>
+						<br/>
+						<p align="left">
+							The REPL provides a specialized key syntax:
+							<pre><code class="language-no-highlight">[project/][config:][task][::key]</code></pre>
+						</p>
+					</section>
+					
+					<section>
+						<h2>Inspecting trees</h2>
+						
+						<pre><code data-trim class="language-no-highlight">
+> inspect tree compile		// Simplified output
+[info] my-project/compile:compile = Task[Analysis]
+[info]   +-my-project/compile:compile::compileInputs = Task[Compiler$Inputs]
+[info]   | +-*/*:maxErrors = 100
+[info]   | +-my-project/compile:dependencyClasspath = Task[Seq[File]]
+[info]   | +-my-project/compile:sources = Task[Seq[File]]
+[info]   | +-my-project/compile:scalacOptions = Task[Seq[String]]
+[info]   | +-my-project/compile:classDirectory = core/target/scala-2.10/classes
+[info]   | +-*/*:javacOptions = Task[Seq[String]]
+[info]   |
+[info]   +-my-project/compile:compile::streams = Task[...]
+[info]     +-*/*:streamsManager = Task[...]						
+...
+						</code></pre>
 					</section>
 
 					<section>
 						<h2>Execution</h2>
 						
-						<p><ul>
-							<li>Executing tasks</li>
-							<li>Continuous execution</li>
-						</ul></p>						
+						<h3 align="left">Executing tasks:</h3>
+						<pre><code data-trim class="language-no-highlight">
+> test
+[info] ResultMatchersTest:
+[info] RuleViolationMatcher
+[info] - should correctly match a rule violation based on value
+[info] - should fail to match a non-matching rule violation
+[info] Run completed in 314 milliseconds.
+[info] Total number of tests run: 2
+[info] Suites: completed 1, aborted 0
+[info] Tests: succeeded 2, failed 0, canceled 0, ignored 0, pending 0
+[info] All tests passed.
+[success] Total time: 1 s, completed Jan 20, 2014 3:52:58 PM						
+						</code></pre>
+						<h3 align="left">Continuous execution:</h3>
+						<pre><code class="language-no-highlight">
+> ~test
+[info] Compiling 11 Scala sources to /Users/tomer/dev/accord/core/target/scala-2.10/test-classes...
+[error] /Users/tomer/dev/accord/core/src/test/scala/com/wix/accord/tests/dsl/OrderingOpsDslSpec.scala:52: not enough arguments for method between: (lowerBound: T, upperBound: T)(implicit evidence$1: Ordering[T])com.wix.accord.dsl.Between[T].
+[error] one error found
+[error] (accord-core/test:compile) Compilation failed
+[error] Total time: 2 s, completed Jan 20, 2014 3:52:24 PM
+1. Waiting for source changes... (press enter to interrupt)
+						</code></pre>
+					</section>
+					
+					<section>
+						<h2>Interactive flows</h2>
+
+						<pre><code data-trim class="language-no-highlight">
+arilou:dev tomer$ activator new
+
+Enter an application name
+> hello-scala
+
+The new application will be created in /home/typesafe/Desktop/hello-scala
+
+Enter a template name, or hit tab to see a list of possible templates
+> 
+hello-akka        hello-play        hello-scala       reactive-stocks   
+> hello-scala
+OK, application "hello-scala" is being created using the
+"hello-scala" template.
+
+To run "hello-scala" from the command-line, run:
+/home/typesafe/Desktop/hello-scala/activator run
+						</code></pre>						
+					</section>
+				</section>
+				
+				<section>
+					<section>
+						<h1>Caveats</h1>
+					</section>
+					
+					<section>
+						<h2>It looks scary</h2>
+						<br/>
+						<p>... but is actually pretty well-documented</p>
+					</section>
+					
+					<section>
+						<h2>Ecosystem is small</h2>
+						<br/>
+						<ul>
+							<li>... relative to Maven</li>
+							<li>Active group on Google Groups</li>
+							<li>Community is active on StackOverflow</li>
+							<li>Plenty of powerful plugins!</li>
+						</ul>
+					</section>
+					
+					<section>
+						<h2>Details may be vague</h2>
+						<br/>
+						<p>Dive into sources every now and then</p>
+						<p>... you'll learn a lot</p>
 					</section>
 				</section>
 
-				<section>
-					<h1>Questions?</h1>
+				<section data-background="images/question-mark-meat.jpg" data-background-size="750px" data-background-repeat="no-repeat" data-background-transition="convex">
+					<h1 style="display: inline; color: #000; text-shadow: 7px 7px 3px #ccc;">Questions?</h1>
 				</section>
 
 				<section>
